@@ -136,6 +136,7 @@
 
 
 
+    
 
     <h3>Transformations</h3>
 
@@ -145,12 +146,12 @@
 
     <br>
 
-    <p>First, let's mark the origin, (0,0).</p>
+    <p>First, let's mark the origin, (0,0). The g tag groups elements together.</p>
     
     
     <svg height="200" width="200">
       
-        <g> <!--- A <g> tag "groups" elements together and can apply styles/effects to child elements --->
+        <g>
             <line x1="-6" x2="6" y1="0" y2="0" style="stroke: black"/>
             <line y1="-6" y2="6" x1="0" x2="0" style="stroke: black"/>
         </g>
@@ -158,8 +159,16 @@
     </svg>
     
 
-    <p>Now let's move the origin to the center. The g tag assigns properties to sets of elements.</p>
+    <p>Now let's move the origin to the center. You can use a g tag to assign properties to sets of elements.</p>
     
+    <svg height="200" width="200">
+      
+        <g transform="translate(100,100)">
+            <line x1="-6" x2="6" y1="0" y2="0" style="stroke: black"/>
+            <line y1="-6" y2="6" x1="0" x2="0" style="stroke: black"/>
+        </g>
+      
+    </svg>
     
     
     
