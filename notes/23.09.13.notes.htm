@@ -146,6 +146,7 @@
           // We're going to use D3's axis tools to do it
 
           let leftAxis = d3.axisLeft(lifeScale);
+          console.log("leftaxis", leftAxis);
           svg
             .append("g")
             .attr("class", "y axis")
