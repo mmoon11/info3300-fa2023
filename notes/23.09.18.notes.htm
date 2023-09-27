@@ -122,8 +122,8 @@
         // Instead, we use d3 data joins to simplify the process dramatically
         function updateChart(circles) {
           // Check out how the circles array changes over time
-          console.log(circles);
-          console.log(plaintextTicks(circles));
+          // console.log(circles);
+          // console.log(plaintextTicks(circles));
 
           // 1. Old way
           // let elements = demo.selectAll("circle").data(circles);
@@ -237,6 +237,7 @@
             );
           });
 
+          // Scales
           const yearExtent = d3.extent(data, (d) => d["year"]);
           const yearScale = d3
             .scaleLinear()
@@ -250,6 +251,9 @@
           const imdbExtent = d3.extent(data, (d) => d["imdb_rating"]);
           const imdbScale = d3.scaleLinear().domain(imdbExtent).range([3, 8]);
 
+          const genreScale = d3.scaleOrdinal(d3.schemeCategory10); // figures out domain as it goes
+
+          // Y axis
           let leftAxis = d3.axisLeft(grossScale).tickFormat(d3.format("$.0s")); // shorter scientific notation with a dollar sign in front
           let leftGridlines = d3
             .axisLeft(grossScale)
@@ -312,7 +316,7 @@
           //     .attr("label", d["title"]);
           // });
 
-          chartArea
+          let circles = chartArea
             .selectAll("circle")
             .data(data)
             .join("circle")
@@ -320,8 +324,45 @@
             .attr("cy", (d) => grossScale(d["worldwide_gross"] + 1))
             .attr("r", (d) => imdbScale(d["imdb_rating"]))
             .attr("opacity", 0.8)
-            .attr("label", (d) => d["title"]);
+            .attr("label", (d) => d["title"])
+            .style("fill", (d) => genreScale(d["Main_Genre"]));
           // done with forEach
+
+          // 2. add some mouseovers
+          console.log(circles);
+
+          // need to use the word FUNCTION (not arrow)
+          circles.on("mouseover", function (event) {
+            console.log(event);
+
+            d3.select("#label").raise();
+
+            // `this` refers to HTML element the event happened on
+            // console.log(this);
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .attr("stroke-width", 4)
+              .attr("stroke", "black")
+              .style("fill", (d) => lighten(genreScale(d["Main_Genre"])));
+
+            let d = d3.select(this).datum();
+
+            d3.select("#label").text(d["title"]);
+          });
+
+          circles.on("mouseout", function (event) {
+            console.log(event);
+
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .attr("stroke-width", 0)
+              .attr("stroke", "")
+              .style("fill", (d) => genreScale(d["Main_Genre"]));
+
+            d3.select("#label").text("");
+          });
         });
       </script>
 
