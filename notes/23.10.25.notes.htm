@@ -1,139 +1,254 @@
-<html><head>
-<title>INFO 3300 - October 25</title>
+<html>
+  <head>
+    <title>INFO 3300 - October 25</title>
 
-  <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Raleway:400,700" rel="stylesheet">
-  
-  <link rel="stylesheet" type="text/css" href="../css/normalize.css">
-  <link rel="stylesheet" type="text/css" href="../css/skeleton.css">
-  <link rel="stylesheet" type="text/css" href="../css/custom-style.css">
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
-  <link rel="stylesheet" href="../css/hljs-base16.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
-  
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  
-  <style>
-  
-  line.dashed {
-    stroke: #aaa;
-    stroke-width: 1px;
-    stroke-dasharray: 2;
-  }
-  text.axis {
-    text-anchor: end;
-    font-variant: all-small-caps;
-  }
-  
-  </style>
+    <link
+      href="https://fonts.googleapis.com/css?family=Lato:400,700|Raleway:400,700"
+      rel="stylesheet"
+    />
 
-</head>
-<body>
-  <div class="container larger">
-    
-    <h3>Notes for October 25</h3>
-    <p>Check out the documentation for <a href="https://github.com/d3/d3-force">d3.force</a>.</p>
-    <p>While we put nodes in a random order on Wednesday, d3 also has a default positioning for nodes when you initialize a forceSimulation. It staggers them using a <a href="https://observablehq.com/@mbostock/phyllotaxis">phyllotaxis arrangement</a>.</p>
-    <p>Here is the d3.drag <a href="https://github.com/d3/d3-drag">documentation page</a>.</p>
-  
-    <h5>HTML for today:</h5>
+    <link rel="stylesheet" type="text/css" href="../css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="../css/skeleton.css" />
+    <link rel="stylesheet" type="text/css" href="../css/custom-style.css" />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css"
+    />
+    <link rel="stylesheet" href="../css/hljs-base16.css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
 
-    <svg id="graph" height="800" width="800" style="background: #fff; margin-top:50px" >
-    </svg>
-    <div>
-    <button id="play">Play</button>
-    <button id="stop">Stop</button>
-    <button id="tick">Tick</button>
-    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 
+    <style>
+      line.dashed {
+        stroke: #aaa;
+        stroke-width: 1px;
+        stroke-dasharray: 2;
+      }
+      text.axis {
+        text-anchor: end;
+        font-variant: all-small-caps;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container larger">
+      <h3>Notes for October 25</h3>
+      <p>
+        Check out the documentation for
+        <a href="https://github.com/d3/d3-force">d3.force</a>.
+      </p>
+      <p>
+        While we put nodes in a random order on Wednesday, d3 also has a default
+        positioning for nodes when you initialize a forceSimulation. It staggers
+        them using a
+        <a href="https://observablehq.com/@mbostock/phyllotaxis"
+          >phyllotaxis arrangement</a
+        >.
+      </p>
+      <p>
+        Here is the d3.drag
+        <a href="https://github.com/d3/d3-drag">documentation page</a>.
+      </p>
 
+      <h5>HTML for today:</h5>
 
-  <!-- This block will be automatically filled with syntax-highlighted code from the script below -->
-  <h5>Code for today:</h5>
-  <pre>
+      <svg
+        id="graph"
+        height="800"
+        width="800"
+        style="background: #fff; margin-top: 50px"
+      ></svg>
+      <div>
+        <button id="play">Play</button>
+        <button id="stop">Stop</button>
+        <button id="tick">Tick</button>
+      </div>
+
+      <!-- This block will be automatically filled with syntax-highlighted code from the script below -->
+      <h5>Code for today:</h5>
+      <pre>
     <code id="display1" class="hljs javascript">
     </code>
   </pre>
-  <pre>
+      <pre>
     <code id="display2" class="hljs javascript">
     </code>
   </pre>
 
-  
+      <script id="notes1">
+        // Layer for drawing
+        const layer = d3.select("#graph").append("g");
+        const width = d3.select("#graph").attr("width");
+        const height = d3.select("#graph").attr("height");
 
-    <script id="notes1">
-    // Layer for drawing
-    const layer = d3.select("#graph").append("g");
-    const width = d3.select("#graph").attr("width");
-    const height = d3.select("#graph").attr("height");
+        const requestData = async () => {
+          // Load dataset of Karate club study
+          const karate = await d3.json("../datasets/soc-karate-dense.json");
 
+          console.log(karate);
 
-    const requestData = async () => {
+          let nodes = karate.nodes;
+          let links = []; // sparse edge list
+          let edgeMatrix = karate.edges;
+          for (let i = 0; i < nodes.length; i++) {
+            for (let j = i; j < nodes.length; j++) {
+              if (edgeMatrix[i][j] === 1) {
+                // if they are connected
+                sourceID = nodes[i]["id"];
+                targetID = nodes[j]["id"];
+                link = { source: sourceID, target: targetID };
+                links.push(link);
+              }
+            }
+          }
 
-      // Load dataset of Karate club study 
-      const karate = await d3.json("../datasets/soc-karate-dense.json");
-      
-      console.log(karate);
+          console.log(links);
 
+          var sim = d3
+            .forceSimulation()
+            .nodes(nodes)
+            .force(
+              "links",
+              d3
+                .forceLink()
+                .links(links)
+                .id((node) => node.id)
+            )
+            .force("repulse", d3.forceManyBody().strength(-150)) // negative means push away
+            .force("center", d3.forceCenter(width / 2.0, height / 2.0))
+            .on("tick", render);
 
+          function render() {
+            let lines = layer
+              .selectAll("line.link")
+              .data(links)
+              .join((enter) =>
+                enter
+                  .append("line")
+                  .attr("class", "link")
+                  .attr("stroke", "#333")
+              )
+              .attr("x1", (d) => d.source.x)
+              .attr("y1", (d) => d.source.y)
+              .attr("x2", (d) => d.target.x)
+              .attr("y2", (d) => d.target.y);
 
-      
-      
-      
-      
+            let circles = layer
+              .selectAll("circle.node")
+              .data(nodes)
+              .join(
+                (
+                  enter // stuff to do just once
+                ) =>
+                  enter
+                    .append("circle")
+                    .attr("class", "node")
+                    .attr("stroke", "#333")
+                    .attr("r", 8)
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("fill", (d) => {
+                      if (d.id === 1) {
+                        return "#0C0";
+                      } else if (d.id === 34) {
+                        return "#C00";
+                      } else {
+                        return "steelblue";
+                      }
+                    })
+                    .call(
+                      d3
+                        .drag()
+                        .on("start", dragstart)
+                        .on("drag", dragging)
+                        .on("end", dragend)
+                    )
+              )
+              .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+          }
 
+          render();
 
+          let label = layer.append("text").attr("id", "label");
 
+          sim.alpha(); // number btwn 0 and 1 -- how hot the sim is
+          sim.alphaTarget(); // min allowable value for alpha
+          sim.alphaDecay(); // rate at which alpha cools off
 
+          function dragstart(event, d) {
+            console.log(event, d);
+            if (!event.active) {
+              label.text(d.id);
+            }
 
+            sim.alphaTarget(0.08).restart();
 
+            // tell the simulation that this node should be ignored
+            // `fx` means fixed x
+            d.fx = event.x;
+            d.fy = event.y;
 
+            label.attr("x", event.x + 5).attr("y", event.y);
+          }
 
+          function dragging(event, d) {
+            console.log(event, d);
 
+            d.fx = event.x;
+            d.fy = event.y;
 
+            label.attr("x", event.x + 5).attr("y", event.y);
+          }
 
+          function dragend(event, d) {
+            console.log(event, d);
+            if (!event.active) {
+              label.text("");
+            }
+            sim.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+          }
 
+          // // Handle the buttons provided in the HTML the same way as we did before
+          // d3.select("#play").on("click", () => {
+          //   // Start animating the simulation
+          //   sim.alpha(1).restart(); // clears the "alpha" value and starts fresh
+          //
+          // });
+          // d3.select("#stop").on("click", () => {
+          //   // Pause the simulation animation
+          //   sim.stop(); // pauses sim
+          //
+          // });
+          // d3.select("#tick").on("click", () => {
+          //   // Move the simulation one "tick"
+          //   sim.tick(); // moves one frame forward, but doesn't trigger tick event
+          //   render(); // manually update circles
+          //
+          // });
+        };
 
-      
-      // // Handle the buttons provided in the HTML the same way as we did before
-      // d3.select("#play").on("click", () => {
-      //   // Start animating the simulation
-      //   sim.alpha(1).restart(); // clears the "alpha" value and starts fresh
-      // 
-      // });
-      // d3.select("#stop").on("click", () => {
-      //   // Pause the simulation animation
-      //   sim.stop(); // pauses sim
-      // 
-      // });
-      // d3.select("#tick").on("click", () => {
-      //   // Move the simulation one "tick"
-      //   sim.tick(); // moves one frame forward, but doesn't trigger tick event
-      //   render(); // manually update circles
-      // 
-      // });
-    }
+        requestData();
+      </script>
 
-    requestData();
-    
-    </script>
-
-
-  <!--- calls the highlight library to fill the <pre> tag with code --->
-  <script>
-  
-  function sanitize(s) {
-    return s.replace("<br>", "\\n")
+      <!--- calls the highlight library to fill the <pre> tag with code --->
+      <script>
+        function sanitize(s) {
+          return s
+            .replace("<br>", "\\n")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
-          }
-    document.getElementById("display1").innerHTML = sanitize( document.getElementById("notes1").innerText);
-    hljs.highlightAll();
-  </script>
-
-
-  </div>
-</body>
+        }
+        document.getElementById("display1").innerHTML = sanitize(
+          document.getElementById("notes1").innerText
+        );
+        hljs.highlightAll();
+      </script>
+    </div>
+  </body>
 </html>
